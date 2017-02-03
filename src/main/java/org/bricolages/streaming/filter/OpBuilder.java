@@ -3,20 +3,17 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import org.bricolages.streaming.ConfigError;
-import org.bricolages.streaming.SequencialNumberRepository;
+import org.bricolages.streaming.exception.ConfigError;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.*;
 
 @Slf4j
 public class OpBuilder {
-    public final SequencialNumberRepository sequencialNumberRepository;
+    @Autowired
+    SequencialNumberRepository sequencialNumberRepository;
 
     public OpBuilder() {
-        this(null);
-    }
-    public OpBuilder(SequencialNumberRepository repo) {
-        this.sequencialNumberRepository = repo;
         registerAll();
     }
 

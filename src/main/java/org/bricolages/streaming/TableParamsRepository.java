@@ -1,10 +1,12 @@
 package org.bricolages.streaming;
-import org.bricolages.streaming.filter.TableId;
+
+import org.bricolages.streaming.exception.ApplicationError;
+import org.bricolages.streaming.vo.TableId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import lombok.*;
 
-interface TableParamsRepository extends JpaRepository<TableParams, Long> {
+public interface TableParamsRepository extends JpaRepository<TableParams, Long> {
     List<TableParams> findByTableId(String tableId);
 
     default TableParams findParams(TableId id) {

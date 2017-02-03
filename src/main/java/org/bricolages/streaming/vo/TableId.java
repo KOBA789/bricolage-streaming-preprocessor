@@ -1,4 +1,4 @@
-package org.bricolages.streaming.filter;
+package org.bricolages.streaming.vo;
 import lombok.*;
 
 @EqualsAndHashCode

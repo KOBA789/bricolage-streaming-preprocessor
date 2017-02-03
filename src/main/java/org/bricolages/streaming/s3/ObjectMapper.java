@@ -1,6 +1,6 @@
 package org.bricolages.streaming.s3;
-import org.bricolages.streaming.ConfigError;
-import org.bricolages.streaming.filter.TableId;
+import org.bricolages.streaming.exception.ConfigError;
+import org.bricolages.streaming.vo.TableId;
 import java.util.Objects;
 import java.util.List;
 import java.util.regex.Pattern;

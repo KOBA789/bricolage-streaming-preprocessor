@@ -1,5 +1,6 @@
 package org.bricolages.streaming;
-import org.bricolages.streaming.filter.TableId;
+
+import org.bricolages.streaming.vo.TableId;
 import javax.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Entity
 @Table(name="preproc_tables")
-class TableParams {
+public class TableParams {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Getter

@@ -155,11 +155,8 @@ public class Application {
         return new ObjectFilterFactory();
     }
 
-    @Autowired
-    SequencialNumberRepository sequentialNumberRepository;
-
     @Bean
     public OpBuilder opBuilder() {
-        return new OpBuilder(sequentialNumberRepository);
+        return new OpBuilder();
     }
 }

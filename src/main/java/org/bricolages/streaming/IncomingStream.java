@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Entity
 @Table(name="preproc_incoming_streams")
-class IncomingStream {
+public class IncomingStream {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="stream_id")

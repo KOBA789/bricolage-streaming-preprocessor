@@ -1,5 +1,4 @@
 package org.bricolages.streaming.filter;
-import org.bricolages.streaming.vo.TableId;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,8 +13,8 @@ public class ObjectFilterFactory {
     @Autowired
     OpBuilder builder;
 
-    public ObjectFilter load(TableId table) {
-        List<OperatorDefinition> defs = repos.findByTargetTableOrderByApplicationOrderAsc(table.toString());
+    public ObjectFilter load(String table) {
+        List<OperatorDefinition> defs = repos.findByTargetTableOrderByApplicationOrderAsc(table);
         List<Op> ops = defs.stream().map((def) -> {
             Op op = builder.build(def);
             log.debug("operator stacked: {}", op);

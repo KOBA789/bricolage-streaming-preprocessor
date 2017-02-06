@@ -1,6 +1,5 @@
 package org.bricolages.streaming.s3;
 import org.bricolages.streaming.exception.ConfigError;
-import org.bricolages.streaming.vo.TableId;
 import java.util.Objects;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -31,7 +30,7 @@ public class ObjectMapper {
             if (m.matches()) {
                 try {
                     val dest = S3ObjectLocation.forUrl(safeSubst(ent.dest, m, src));
-                    val table = new TableId(safeSubst(ent.table, m, src));
+                    val table = safeSubst(ent.table, m, src);
                     return new Result(dest, table);
                 }
                 catch (S3UrlParseException ex) {
@@ -82,6 +81,6 @@ public class ObjectMapper {
     @RequiredArgsConstructor
     public static final class Result {
         @Getter final S3ObjectLocation destLocation;
-        @Getter final TableId tableId;
+        @Getter final String tableId;
     }
 }

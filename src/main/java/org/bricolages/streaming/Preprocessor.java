@@ -3,7 +3,6 @@ import org.bricolages.streaming.filter.*;
 import org.bricolages.streaming.event.*;
 import org.bricolages.streaming.exception.ApplicationAbort;
 import org.bricolages.streaming.s3.*;
-import org.bricolages.streaming.vo.TableId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import java.io.BufferedReader;
@@ -63,7 +62,6 @@ public class Preprocessor implements EventHandlers {
             log.warn("S3 object could not mapped: {}", src);
             return false;
         }
-        TableId table = mapResult.getTableId();
         S3ObjectLocation dest = mapResult.getDestLocation();
 
         FilterResult result = new FilterResult(src.urlString(), dest.urlString());
@@ -162,7 +160,7 @@ public class Preprocessor implements EventHandlers {
     FilterResultRepository repos;
 
     @Autowired
-    TableParamsRepository paramsRepos;
+    PacketStreamRepository streamRepos;
 
     @Autowired
     IncomingStreamRepository strRepos;
@@ -176,10 +174,10 @@ public class Preprocessor implements EventHandlers {
             log.warn("S3 object could not mapped: {}", src);
             return;
         }
-        TableId table = mapResult.getTableId();
+        String table = mapResult.getTableId();
         S3ObjectLocation dest = mapResult.getDestLocation();
 
-        TableParams params = paramsRepos.findParams(table);
+        PacketStream params = streamRepos.findParams(table);
         if (params == null) {
             IncomingStream stream = strRepos.findStream(table);
             if (stream == null) {
@@ -199,7 +197,7 @@ public class Preprocessor implements EventHandlers {
             // Processing is temporary disabled; process objects later
             return;
         }
-        if (params.doesDiscard()) {
+        if (params.isDiscarded()) {
             // Just ignore without processing, do not keep SQS messages.
             log.info("discard event: {}", event.getLocation().toString());
             eventQueue.deleteAsync(event);
@@ -228,8 +226,8 @@ public class Preprocessor implements EventHandlers {
         }
     }
 
-    S3ObjectMetadata applyFilter(ObjectFilter filter, S3ObjectLocation src, S3ObjectLocation dest, FilterResult result, TableId table) throws S3IOException, IOException {
-        try (S3Agent.Buffer buf = s3.openWriteBuffer(dest, table.toString())) {
+    S3ObjectMetadata applyFilter(ObjectFilter filter, S3ObjectLocation src, S3ObjectLocation dest, FilterResult result, String table) throws S3IOException, IOException {
+        try (S3Agent.Buffer buf = s3.openWriteBuffer(dest, table)) {
             try (BufferedReader r = s3.openBufferedReader(src)) {
                 filter.apply(r, buf.getBufferedWriter(), src.toString(), result);
             }

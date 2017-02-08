@@ -1,11 +1,13 @@
 package org.bricolages.streaming;
 import org.bricolages.streaming.filter.ObjectFilterFactory;
 import org.bricolages.streaming.filter.OpBuilder;
+import org.bricolages.streaming.preprocess.ObjectMapper;
+import org.bricolages.streaming.preprocess.Preprocessor;
+import org.bricolages.streaming.preprocess.QueueListener;
 import org.bricolages.streaming.event.EventQueue;
 import org.bricolages.streaming.event.LogQueue;
 import org.bricolages.streaming.event.SQSQueue;
 import org.bricolages.streaming.s3.S3Agent;
-import org.bricolages.streaming.s3.ObjectMapper;
 import org.bricolages.streaming.s3.S3ObjectLocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -16,6 +18,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.sqs.AmazonSQSClient;
+
+
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -80,29 +84,20 @@ public class Application {
 
         if (mapUrl != null) {
             val result = mapper().map(mapUrl);
-            System.out.println(result.getDestLocation());
+            System.out.println(result.destLocation());
             System.exit(0);
         }
 
-        val preproc = preprocessor();
         if (procUrl != null) {
             val out = new BufferedWriter(new OutputStreamWriter(System.out));
-            val success = preproc.processUrl(procUrl, out);
+            preprocessor().processOnly(procUrl, out);
             out.flush();
-            if (success) {
-                System.err.println("SUCCEEDED");
-                System.exit(0);
-            }
-            else {
-                System.err.println("FAILED");
-                System.exit(1);
-            }
         }
         else if (oneshot) {
-            preproc.runOneshot();
+            queueListener().runOnce();
         }
         else {
-            preproc.run();
+            queueListener().run();
         }
     }
 
@@ -119,13 +114,18 @@ public class Application {
     Config config;
 
     @Bean
+    public QueueListener queueListener() {
+        return new QueueListener(eventQueue(), preprocessor());
+    }
+
+    @Bean
     public Preprocessor preprocessor() {
-        return new Preprocessor(eventQueue(), logQueue(), s3(), mapper(), filterFactory());
+        return new Preprocessor(logQueue(), s3(), mapper(), filterFactory());
     }
 
     @Bean
     public EventQueue eventQueue() {
-        val config = this.config.getEventQueueEntry();
+        val config = this.config.getEventQueue();
         val sqs = new SQSQueue(new AmazonSQSClient(), config.url);
         if (config.visibilityTimeout > 0) sqs.setVisibilityTimeout(config.visibilityTimeout);
         if (config.maxNumberOfMessages > 0) sqs.setMaxNumberOfMessages(config.maxNumberOfMessages);
@@ -135,7 +135,7 @@ public class Application {
 
     @Bean
     public LogQueue logQueue() {
-        val config = this.config.getLogQueueEntry();
+        val config = this.config.getLogQueue();
         val sqs = new SQSQueue(new AmazonSQSClient(), config.url);
         return new LogQueue(sqs);
     }
@@ -147,7 +147,7 @@ public class Application {
 
     @Bean
     public ObjectMapper mapper() {
-        return new ObjectMapper(this.config.getMappingEntries());
+        return new ObjectMapper(this.config.getMapping());
     }
 
     @Bean

@@ -1,60 +1,28 @@
 package org.bricolages.streaming;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import org.bricolages.streaming.s3.ObjectMapper;
+import org.bricolages.streaming.preprocess.ObjectMapper;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
+import org.bricolages.streaming.exception.ConfigError;
+import org.yaml.snakeyaml.Yaml;
+import lombok.*;
 import java.util.List;
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 @Component
 @ConfigurationProperties(prefix = "bricolage")
 public class Config {
-
-    private final EventQueue eventQueue = new EventQueue();
-    private final LogQueue logQueue = new LogQueue();
-    private List<Mapping> mappings = new ArrayList<>();
-
-    // Must be public for Spring
-    public EventQueue getEventQueue() {
-        return eventQueue;
-    }
-
-    public LogQueue getLogQueue() {
-        return logQueue;
-    }
-
-    public List<Mapping> getMappings() {
-        return mappings;
-    }
-
-    public void setMappings(List<Mapping> mappings) {
-        this.mappings = mappings;
-    }
-
-    //TODO Remove *Entry() methods
-    EventQueueEntry getEventQueueEntry() {
-        return new EventQueueEntry(getEventQueue());
-    }
-
-    LogQueueEntry getLogQueueEntry() {
-        return new LogQueueEntry(getLogQueue());
-    }
-
-    List<ObjectMapper.Entry> getMappingEntries() {
-        List<ObjectMapper.Entry> entries = new ArrayList<>();
-        for (Mapping m : getMappings()) {
-            ObjectMapper.Entry e = new ObjectMapper.Entry();
-            e.setSrc(m.src);
-            e.setDest(m.dest);
-            e.setTable(m.table);
-            entries.add(e);
-        }
-        return entries;
-    }
+    @Getter
+    @Setter
+    private EventQueueEntry eventQueue;
+    @Getter
+    @Setter
+    private LogQueueEntry logQueue;
+    @Getter
+    @Setter
+    private List<ObjectMapper.Entry> mapping;
 
     @Getter
     @Setter
@@ -91,14 +59,5 @@ public class Config {
         public LogQueueEntry(LogQueue sq) {
             this.url = sq.getUrl();
         }
-    }
-
-    @Getter
-    @Setter
-    // Must be pubic (Don't know why...)
-    public static class Mapping {
-        private String src;
-        private String dest;
-        private String table;
     }
 }

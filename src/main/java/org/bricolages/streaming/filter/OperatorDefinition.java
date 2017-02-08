@@ -1,4 +1,5 @@
 package org.bricolages.streaming.filter;
+import org.bricolages.streaming.preprocess.PacketStream;
 import org.bricolages.streaming.exception.ConfigError;
 import javax.persistence.*;
 import java.util.List;
@@ -10,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @Entity
-@Table(name="preproc_definition")
+@Table(name="strload_filters")
 public class OperatorDefinition {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -20,9 +21,9 @@ public class OperatorDefinition {
     @Getter
     String operatorId;
 
-    @Column(name="target_table")
-    @Getter
-    String targetTable;
+    @ManyToOne
+    @JoinColumn(name="stream_id")
+    PacketStream stream;
 
     @Column(name="target_column")
     String targetColumn;
@@ -40,8 +41,8 @@ public class OperatorDefinition {
     Timestamp updatedTime;
 
     // For tests
-    OperatorDefinition(String operatorId, String targetTable, String targetColumn, String params) {
-        this(0, operatorId, targetTable, targetColumn, 0, params, null, null);
+    OperatorDefinition(String operatorId, PacketStream stream, String targetColumn, String params) {
+        this(0, operatorId, stream, targetColumn, 0, params, null, null);
     }
 
     public boolean isSingleColumn() {
@@ -49,7 +50,7 @@ public class OperatorDefinition {
     }
 
     public String getTargetColumn() {
-        if (!isSingleColumn()) throw new ConfigError("is not a single column op: " + targetTable + ", " + operatorId);
+        if (!isSingleColumn()) throw new ConfigError("is not a single column op: " + stream.getName() + ", " + operatorId);
         return targetColumn;
     }
 
@@ -59,7 +60,7 @@ public class OperatorDefinition {
             return map.readValue(params, type);
         }
         catch (IOException err) {
-            throw new ConfigError("could not map filter parameters: " + targetTable + "." + targetColumn + "[" + operatorId + "]: " + params + ": " + err.getMessage());
+            throw new ConfigError("could not map filter parameters: " + stream.getName() + "." + targetColumn + "[" + operatorId + "]: " + params + ": " + err.getMessage());
         }
     }
 }

@@ -1,4 +1,4 @@
-package org.bricolages.streaming.filter;
+package org.bricolages.streaming.preprocess;
 import javax.persistence.*;
 import java.util.Date;
 import java.sql.Timestamp;

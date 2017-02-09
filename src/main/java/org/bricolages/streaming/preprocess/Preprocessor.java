@@ -30,7 +30,18 @@ public class Preprocessor {
         processPacket(location, mapResult, doesDispatch);
     }
 
-    public void processPacket(S3ObjectLocation location, ObjectMapper.Result mapResult, boolean doesDispatch) {
+    public void processOnly(S3ObjectLocation loc, BufferedWriter out) throws S3IOException, IOException {
+        val mapResult = mapper.map(loc);
+        PacketStream stream = streamRepos.findStream(mapResult.streamName);
+        val filter = filterFactory.load(stream);
+
+        try (BufferedReader r = s3.openBufferedReader(loc)) {
+            val stats = filter.apply(r, out, loc.toString());
+            log.debug("src: {}, dest: {}, in: {}, out: {}", loc, mapResult.destLocation(), stats.inputRows, stats.outputRows);
+        }
+    }
+
+    void processPacket(S3ObjectLocation location, ObjectMapper.Result mapResult, boolean doesDispatch) {
         PacketStream stream = streamRepos.findStream(mapResult.streamName);
 
         if (stream.isDisabled()) {
@@ -52,7 +63,7 @@ public class Preprocessor {
         // FIXME
     }
 
-    public Result process(S3ObjectLocation location, ObjectMapper.Result mapResult) {
+    Result process(S3ObjectLocation location, ObjectMapper.Result mapResult) {
         //Activity activity = new Activity(packet);
         //activityRepos.save(activity);
         try {
@@ -77,62 +88,6 @@ public class Preprocessor {
         }
     }
 
-    Thread mainThread;
-    boolean isTerminating = false;
-    
-    void trapSignals() {
-        mainThread = Thread.currentThread();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                initiateShutdown();
-                waitMainThread();
-            }
-        });
-    }
-
-    void initiateShutdown() {
-        log.info("initiate shutdown; mainThread={}", mainThread);
-        this.isTerminating = true;
-        if (mainThread != null) {
-            mainThread.interrupt();
-        }
-    }
-
-    boolean isTerminating() {
-        if (isTerminating) return true;
-        if (mainThread.isInterrupted()) {
-            this.isTerminating = true;
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    void waitMainThread() {
-        if (mainThread == null) return;
-        try {
-            log.info("waiting main thread...");
-            mainThread.join();
-        }
-        catch (InterruptedException ex) {
-            // ignore
-        }
-    }
-
-    void safeSleep(int sec) {
-        try {
-            Thread.sleep(sec * 1000);
-        }
-        catch (InterruptedException ex) {
-            this.isTerminating = true;
-        }
-    }
-
-    @Autowired
-    FilterResultRepository repos;
-
     @Autowired
     PacketStreamRepository streamRepos;
 
@@ -150,17 +105,6 @@ public class Preprocessor {
             }
             result.metadata = buf.commit();
             return result;
-        }
-    }
-
-    public void processOnly(S3ObjectLocation loc, BufferedWriter out) throws S3IOException, IOException {
-        val mapResult = mapper.map(loc);
-        PacketStream stream = streamRepos.findStream(mapResult.streamName);
-        val filter = filterFactory.load(stream);
-        
-        try (BufferedReader r = s3.openBufferedReader(loc)) {
-            val stats = filter.apply(r, out, loc.toString());
-            log.debug("src: {}, dest: {}, in: {}, out: {}", loc, mapResult.destLocation(), stats.inputRows, stats.outputRows);
         }
     }
 }

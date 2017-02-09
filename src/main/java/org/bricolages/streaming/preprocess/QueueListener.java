@@ -1,10 +1,6 @@
 package org.bricolages.streaming.preprocess;
 import org.bricolages.streaming.event.*;
-import org.bricolages.streaming.s3.S3ObjectLocation;
 import org.bricolages.streaming.exception.ApplicationAbort;
-import org.springframework.beans.factory.annotation.Autowired;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +55,13 @@ public class QueueListener implements EventHandlers {
             empty = false;
         }
         return empty;
+    }
+
+    @Override
+    public void handleS3Event(S3Event event) {
+        log.debug("handling URL: {}", event.getLocation().toString());
+        preprocessor.processObject(event.getLocation(), !event.doesNotDispatch());
+        eventQueue.deleteAsync(event);
     }
 
     @Override
@@ -126,12 +129,5 @@ public class QueueListener implements EventHandlers {
         catch (InterruptedException ex) {
             this.isTerminating = true;
         }
-    }
-
-    @Override
-    public void handleS3Event(S3Event event) {
-        log.debug("handling URL: {}", event.getLocation().toString());
-        preprocessor.processObject(event.getLocation(), !event.doesNotDispatch());
-        eventQueue.deleteAsync(event);
     }
 }

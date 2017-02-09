@@ -12,6 +12,7 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'spring-boot'
+apply plugin: 'jacoco'
 
 dependencyManagement {
     imports {
@@ -73,3 +74,18 @@ test {
         exceptionFormat "full"
     }
 }
+
+///// coverage ///////////////////////////////////////////////////////////////////////////
+
+jacoco {
+    toolVersion = "0.7.+"
+}
+
+task jacoco(type: JacocoReport, dependsOn: 'test') {
+    sourceSets sourceSets.main
+    executionData = files(tasks.jacocoTestReport.executionData)
+    reports {
+        html.enabled = true
+    }
+}
+

@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
 @Slf4j
-public class ObjectMapper {
+public class StreamRouter {
     final List<Entry> entries;
 
     void check() throws ConfigError {

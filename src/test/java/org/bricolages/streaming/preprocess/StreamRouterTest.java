@@ -8,9 +8,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import lombok.*;
 
-public class ObjectMapperTest {
-    ObjectMapper newMapper(ObjectMapper.Entry... entries) {
-        return new ObjectMapper(Arrays.asList(entries));
+public class StreamRouterTest {
+    StreamRouter newMapper(StreamRouter.Entry... entries) {
+        return new StreamRouter(Arrays.asList(entries));
     }
 
     S3ObjectLocation loc(String url) throws S3UrlParseException {
@@ -19,7 +19,7 @@ public class ObjectMapperTest {
 
     @Test
     public void map() throws Exception {
-        val entry = new ObjectMapper.Entry("s3://src-bucket/src-prefix/(schema\\.table)/(.*\\.gz)", "$1", "dest-bucket", "dest-prefix/$1", "", "$2");
+        val entry = new StreamRouter.Entry("s3://src-bucket/src-prefix/(schema\\.table)/(.*\\.gz)", "$1", "dest-bucket", "dest-prefix/$1", "", "$2");
         val map = newMapper(entry);
         map.check();
         val result = map.map(loc("s3://src-bucket/src-prefix/schema.table/datafile.json.gz"));

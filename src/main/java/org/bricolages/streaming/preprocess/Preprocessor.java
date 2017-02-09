@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Preprocessor {
     final LogQueue logQueue;
     final S3Agent s3;
-    final ObjectMapper mapper;
+    final StreamRouter mapper;
     final ObjectFilterFactory filterFactory;
 
     public void processObject(S3ObjectLocation location, boolean doesDispatch) {
@@ -30,18 +30,18 @@ public class Preprocessor {
         processPacket(location, mapResult, doesDispatch);
     }
 
-    public void processOnly(S3ObjectLocation loc, BufferedWriter out) throws S3IOException, IOException {
-        val mapResult = mapper.map(loc);
+    public void processOnly(S3ObjectLocation location, BufferedWriter out) throws S3IOException, IOException {
+        val mapResult = mapper.map(location);
         PacketStream stream = streamRepos.findStream(mapResult.streamName);
         val filter = filterFactory.load(stream);
 
-        try (BufferedReader r = s3.openBufferedReader(loc)) {
-            val stats = filter.apply(r, out, loc.toString());
-            log.debug("src: {}, dest: {}, in: {}, out: {}", loc, mapResult.destLocation(), stats.inputRows, stats.outputRows);
+        try (BufferedReader r = s3.openBufferedReader(location)) {
+            val stats = filter.apply(r, out, location.toString());
+            log.debug("src: {}, dest: {}, in: {}, out: {}", location, mapResult.destLocation(), stats.inputRows, stats.outputRows);
         }
     }
 
-    void processPacket(S3ObjectLocation location, ObjectMapper.Result mapResult, boolean doesDispatch) {
+    void processPacket(S3ObjectLocation location, StreamRouter.Result mapResult, boolean doesDispatch) {
         PacketStream stream = streamRepos.findStream(mapResult.streamName);
 
         if (stream.isDisabled()) {
@@ -59,11 +59,11 @@ public class Preprocessor {
         }
     }
 
-    void writeDispatchInfo(ObjectMapper.Result mapResult, Result result) {
+    void writeDispatchInfo(StreamRouter.Result mapResult, Result result) {
         // FIXME
     }
 
-    Result process(S3ObjectLocation location, ObjectMapper.Result mapResult) {
+    Result process(S3ObjectLocation location, StreamRouter.Result mapResult) {
         //Activity activity = new Activity(packet);
         //activityRepos.save(activity);
         try {

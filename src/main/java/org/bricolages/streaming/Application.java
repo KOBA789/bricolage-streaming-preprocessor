@@ -1,7 +1,7 @@
 package org.bricolages.streaming;
 import org.bricolages.streaming.filter.ObjectFilterFactory;
 import org.bricolages.streaming.filter.OpBuilder;
-import org.bricolages.streaming.preprocess.ObjectMapper;
+import org.bricolages.streaming.preprocess.StreamRouter;
 import org.bricolages.streaming.preprocess.Preprocessor;
 import org.bricolages.streaming.preprocess.QueueListener;
 import org.bricolages.streaming.event.EventQueue;
@@ -146,8 +146,8 @@ public class Application {
     }
 
     @Bean
-    public ObjectMapper mapper() {
-        return new ObjectMapper(this.config.getMappings());
+    public StreamRouter mapper() {
+        return new StreamRouter(this.config.getMappings());
     }
 
     @Bean

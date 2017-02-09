@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import org.bricolages.streaming.exception.ConfigError;
 import org.yaml.snakeyaml.Yaml;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.io.InputStream;
 import java.io.FileInputStream;
@@ -15,42 +17,25 @@ import java.io.IOException;
 @ConfigurationProperties(prefix = "bricolage")
 public class Config {
     @Getter
-    @Setter
-    private EventQueueEntry eventQueue;
+    private final EventQueue eventQueue = new EventQueue();
     @Getter
-    @Setter
-    private LogQueueEntry logQueue;
+    private final LogQueue logQueue = new LogQueue();
     @Getter
-    @Setter
-    private List<ObjectMapper.Entry> mapping;
+    private List<ObjectMapper.Entry> mappings = new ArrayList<>();
 
     @Getter
     @Setter
     static class EventQueue {
-        private String url;
-        private int visibilityTimeout;
-        private int maxNumberOfMessages;
-        private int waitTimeSeconds;
-    }
-
-    class EventQueueEntry {
-        public final String url;
-        public final int visibilityTimeout;
-        public final int maxNumberOfMessages;
-        public final int waitTimeSeconds;
-
-        public EventQueueEntry(EventQueue eq) {
-            this.url = eq.getUrl();
-            this.visibilityTimeout = eq.getVisibilityTimeout();
-            this.maxNumberOfMessages = eq.getMaxNumberOfMessages();
-            this.waitTimeSeconds = eq.getWaitTimeSeconds();
-        }
+        public String url;
+        public int visibilityTimeout;
+        public int maxNumberOfMessages;
+        public int waitTimeSeconds;
     }
 
     @Getter
     @Setter
     static class LogQueue {
-        private String url;
+        public String url;
     }
 
     class LogQueueEntry {

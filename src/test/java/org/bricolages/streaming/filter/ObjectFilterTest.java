@@ -10,9 +10,9 @@ public class ObjectFilterTest {
 
     ObjectFilter newFilter() {
         val ops = new ArrayList<Op>();
-        ops.add(builder.build(new OperatorDefinition("int", "schema.table", "int_col", "{}")));
-        ops.add(builder.build(new OperatorDefinition("bigint", "schema.table", "bigint_col", "{}")));
-        ops.add(builder.build(new OperatorDefinition("text", "schema.table", "text_col", "{\"maxByteLength\":10,\"dropIfOverflow\":true}")));
+        ops.add(builder.build(new OperatorDefinition("int",  "int_col", "{}")));
+        ops.add(builder.build(new OperatorDefinition("bigint",  "bigint_col", "{}")));
+        ops.add(builder.build(new OperatorDefinition("text",  "text_col", "{\"maxByteLength\":10,\"dropIfOverflow\":true}")));
         return new ObjectFilter(ops);
     }
 
@@ -34,14 +34,13 @@ public class ObjectFilterTest {
 
         val out = new StringWriter();
         val bufOut = new BufferedWriter(out);
-        val r = new FilterResult();
-        f.apply(in, bufOut, "in", r);
+        val s = f.apply(in, bufOut, "in");
         bufOut.close();
 
         assertEquals(expected, out.toString());
-        assertEquals(5, r.inputRows);
-        assertEquals(3, r.outputRows);
-        assertEquals(1, r.errorRows);
+        assertEquals(5, s.inputRows);
+        assertEquals(3, s.outputRows);
+        assertEquals(1, s.errorRows);
     }
 
     @Test

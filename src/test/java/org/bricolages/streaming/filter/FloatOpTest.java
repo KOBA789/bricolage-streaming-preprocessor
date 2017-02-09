@@ -9,7 +9,7 @@ public class FloatOpTest {
 
     @Test
     public void apply() throws Exception {
-        val def = new OperatorDefinition("float", "schema.table", "n", "{}");
+        val def = new OperatorDefinition("float",  "n", "{}");
         val op = (FloatOp) builder.build(def);
         {
             val rec = Record.parse("{\"n\":1.5}");

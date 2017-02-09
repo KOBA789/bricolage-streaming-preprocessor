@@ -8,7 +8,7 @@ public class AggregateOpTest {
 
     @Test
     public void apply() throws Exception {
-        val def = new OperatorDefinition("aggregate", "schema.table", "*", "{\"targetColumns\":\"^q:\",\"aggregatedColumn\":\"q\"}");
+        val def = new OperatorDefinition("aggregate", "*", "{\"targetColumns\":\"^q:\",\"aggregatedColumn\":\"q\"}");
         val op = (AggregateOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"q:x\":2,\"q:y\":3,\"b\":4}");
         val out = op.apply(rec);
@@ -17,7 +17,7 @@ public class AggregateOpTest {
 
     @Test
     public void apply_keepTargetColumns() throws Exception {
-        val def = new OperatorDefinition("aggregate", "schema.table", "*", "{\"targetColumns\":\"^q:\",\"aggregatedColumn\":\"q\",\"keepTargetColumns\":true}");
+        val def = new OperatorDefinition("aggregate", "*", "{\"targetColumns\":\"^q:\",\"aggregatedColumn\":\"q\",\"keepTargetColumns\":true}");
         val op = (AggregateOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"q:x\":2,\"q:y\":3,\"b\":4}");
         val out = op.apply(rec);

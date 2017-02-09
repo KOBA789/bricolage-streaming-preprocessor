@@ -9,7 +9,7 @@ public class TimeZoneOpTest {
 
     @Test
     public void build() throws Exception {
-        val def = new OperatorDefinition("timezone", "schema.table", "tz_col", "{\"sourceOffset\":\"+00:00\",\"targetOffset\":\"+09:00\"}");
+        val def = new OperatorDefinition("timezone",  "tz_col", "{\"sourceOffset\":\"+00:00\",\"targetOffset\":\"+09:00\"}");
         val op = (TimeZoneOp)builder.build(def);
         assertEquals("tz_col", op.targetColumnName());
         assertEquals(ZoneOffset.of("+00:00"), op.sourceOffset);

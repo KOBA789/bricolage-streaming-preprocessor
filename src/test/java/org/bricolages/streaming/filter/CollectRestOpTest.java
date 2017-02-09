@@ -8,7 +8,7 @@ public class CollectRestOpTest {
 
     @Test
     public void apply() throws Exception {
-        val def = new OperatorDefinition("collectrest", "schema.table", "*", "{\"rejectColumns\":[\"a\",\"c\"],\"aggregatedColumn\":\"rest\"}");
+        val def = new OperatorDefinition("collectrest", "*", "{\"rejectColumns\":[\"a\",\"c\"],\"aggregatedColumn\":\"rest\"}");
         val op = (CollectRestOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"b\":2,\"c\":3,\"d\":4}");
         val out = op.apply(rec);

@@ -147,7 +147,7 @@ public class Application {
 
     @Bean
     public ObjectMapper mapper() {
-        return new ObjectMapper(this.config.getMapping());
+        return new ObjectMapper(this.config.getMappings());
     }
 
     @Bean

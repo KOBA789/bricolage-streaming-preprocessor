@@ -39,8 +39,8 @@ public class PacketStream {
     @Column(name="discard")
     boolean discard;
 
-    @OneToMany(mappedBy="stream")
-    @OrderBy("application ASC")
+    @OneToMany(mappedBy="stream", fetch=FetchType.EAGER)
+    @OrderBy("application_order ASC")
     @Getter
     List<OperatorDefinition> operators;
 

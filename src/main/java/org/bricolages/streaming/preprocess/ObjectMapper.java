@@ -1,7 +1,8 @@
 package org.bricolages.streaming.preprocess;
 import org.bricolages.streaming.exception.ConfigError;
 import org.bricolages.streaming.s3.S3ObjectLocation;
-import java.util.Objects;
+
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -27,6 +28,7 @@ public class ObjectMapper {
 
     public Result map(S3ObjectLocation src) throws ConfigError {
         for (Entry ent : entries) {
+            System.out.println(ent);
             Matcher m = ent.sourcePattern().matcher(src.urlString());
             if (m.matches()) {
                 return new Result(
@@ -52,6 +54,8 @@ public class ObjectMapper {
         }
     }
 
+    @Getter
+    @Setter
     @NoArgsConstructor
     public static final class Entry {
         public String srcUrlPattern;
@@ -88,7 +92,7 @@ public class ObjectMapper {
         public final String objectName;
 
         public S3ObjectLocation destLocation() {
-            return new S3ObjectLocation(destBucket, streamPrefix + "/" + objectPrefix + "/" + objectName);
+            return new S3ObjectLocation(destBucket, Paths.get(streamPrefix, objectPrefix, objectName).toString());
         }
     }
 }

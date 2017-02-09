@@ -9,7 +9,7 @@ public class UnixTimeOpTest {
 
     @Test
     public void build() throws Exception {
-        val def = new OperatorDefinition("unixtime", "schema.table", "ut_col", "{\"zoneOffset\":\"+09:00\"}");
+        val def = new OperatorDefinition("unixtime",  "ut_col", "{\"zoneOffset\":\"+09:00\"}");
         val op = (UnixTimeOp)builder.build(def);
         assertEquals("ut_col", op.targetColumnName());
         assertEquals(ZoneOffset.of("+09:00"), op.zoneOffset);

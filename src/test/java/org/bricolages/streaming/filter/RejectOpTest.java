@@ -8,7 +8,7 @@ public class RejectOpTest {
 
     @Test
     public void apply_matched_string() throws Exception {
-        val def = new OperatorDefinition("reject", "schema.table", "hoge", "{\"type\": \"string\", \"value\": \"str\"}");
+        val def = new OperatorDefinition("reject",  "hoge", "{\"type\": \"string\", \"value\": \"str\"}");
         val op = (RejectOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"b\":2,\"c\":3,\"hoge\":\"str\"}");
         val out = op.apply(rec);
@@ -17,7 +17,7 @@ public class RejectOpTest {
 
     @Test
     public void apply_not_matched_string() throws Exception {
-        val def = new OperatorDefinition("reject", "schema.table", "hoge", "{\"type\": \"string\", \"value\": \"not_matched\"}");
+        val def = new OperatorDefinition("reject",  "hoge", "{\"type\": \"string\", \"value\": \"not_matched\"}");
         val op = (RejectOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"b\":2,\"c\":3,\"hoge\":\"str\"}");
         val out = op.apply(rec);
@@ -26,7 +26,7 @@ public class RejectOpTest {
 
     @Test
     public void apply_matched_integer() throws Exception {
-        val def = new OperatorDefinition("reject", "schema.table", "hoge", "{\"type\": \"integer\", \"value\": 1}");
+        val def = new OperatorDefinition("reject",  "hoge", "{\"type\": \"integer\", \"value\": 1}");
         val op = (RejectOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"b\":2,\"c\":3,\"hoge\":1}");
         val out = op.apply(rec);
@@ -35,7 +35,7 @@ public class RejectOpTest {
 
     @Test
     public void apply_not_matched_integer() throws Exception {
-        val def = new OperatorDefinition("reject", "schema.table", "hoge", "{\"type\": \"integer\", \"value\": 2}");
+        val def = new OperatorDefinition("reject",  "hoge", "{\"type\": \"integer\", \"value\": 2}");
         val op = (RejectOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"b\":2,\"c\":3,\"hoge\":1}");
         val out = op.apply(rec);
@@ -44,7 +44,7 @@ public class RejectOpTest {
 
     @Test
     public void apply_matched_null() throws Exception {
-        val def = new OperatorDefinition("reject", "schema.table", "hoge", "{\"type\": \"null\"}");
+        val def = new OperatorDefinition("reject",  "hoge", "{\"type\": \"null\"}");
         val op = (RejectOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"b\":2,\"c\":3,\"hoge\":null}");
         val out = op.apply(rec);
@@ -53,7 +53,7 @@ public class RejectOpTest {
 
     @Test
     public void apply_not_matched_non_null() throws Exception {
-        val def = new OperatorDefinition("reject", "schema.table", "hoge", "{\"type\": \"null\"}");
+        val def = new OperatorDefinition("reject",  "hoge", "{\"type\": \"null\"}");
         val op = (RejectOp)builder.build(def);
         val rec = Record.parse("{\"a\":1,\"b\":2,\"c\":3,\"hoge\":\"non_null\"}");
         val out = op.apply(rec);

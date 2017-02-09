@@ -41,8 +41,8 @@ public class OperatorDefinition {
     Timestamp updatedTime;
 
     // For tests
-    OperatorDefinition(String operatorId, PacketStream stream, String targetColumn, String params) {
-        this(0, operatorId, stream, targetColumn, 0, params, null, null);
+    OperatorDefinition(String operatorId, String targetColumn, String params) {
+        this(0, operatorId, null, targetColumn, 0, params, null, null);
     }
 
     public boolean isSingleColumn() {

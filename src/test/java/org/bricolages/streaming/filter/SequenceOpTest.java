@@ -9,7 +9,7 @@ public class SequenceOpTest {
 
     @Test
     public void apply() throws Exception {
-        val def = new OperatorDefinition("sequence", "schema.table", "seq", "{}");
+        val def = new OperatorDefinition("sequence", "seq", "{}");
         val op = new SequenceOp(def);
         op.currentValue = 9;
         op.upperValue = 10;
@@ -19,7 +19,7 @@ public class SequenceOpTest {
     }
 
     public void apply_twice() throws Exception {
-        val def = new OperatorDefinition("sequence", "schema.table", "seq", "{}");
+        val def = new OperatorDefinition("sequence", "seq", "{}");
         val op = new SequenceOp(def);
         op.currentValue = 9;
         op.upperValue = 11;
@@ -32,7 +32,7 @@ public class SequenceOpTest {
 
     @Test(expected=ApplicationError.class)
     public void apply_over_capacity() throws Exception {
-        val def = new OperatorDefinition("sequence", "schema.table", "seq", "{}");
+        val def = new OperatorDefinition("sequence", "seq", "{}");
         val op = new SequenceOp(def);
         op.currentValue = 9;
         op.upperValue = 10;

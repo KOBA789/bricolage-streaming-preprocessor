@@ -32,7 +32,6 @@ public class Preprocessor {
 
     public void processPacket(S3ObjectLocation location, ObjectMapper.Result mapResult, boolean doesDispatch) {
         PacketStream stream = streamRepos.findStream(mapResult.streamName);
-        val filter = filterFactory.load(stream);
 
         if (stream.isDisabled()) {
             // TODO:
@@ -147,7 +146,7 @@ public class Preprocessor {
         Result result = new Result();
         try (S3Agent.Buffer buf = s3.openWriteBuffer(dest, streamName)) {
             try (BufferedReader r = s3.openBufferedReader(src)) {
-                filter.apply(r, buf.getBufferedWriter(), src.toString());
+                result.stats = filter.apply(r, buf.getBufferedWriter(), src.toString());
             }
             result.metadata = buf.commit();
             return result;

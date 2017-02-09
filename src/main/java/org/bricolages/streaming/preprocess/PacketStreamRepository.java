@@ -6,10 +6,10 @@ import java.util.List;
 import lombok.*;
 
 public interface PacketStreamRepository extends JpaRepository<PacketStream, Long> {
-    List<PacketStream> findByStreamName(String streamName);
+    List<PacketStream> findByName(String streamName);
 
     default PacketStream findStream(String streamName) {
-        val list = findByStreamName(streamName);
+        val list = findByName(streamName);
         if (list.isEmpty()) return null;
         if (list.size() > 1) {
             throw new ApplicationError("FATAL: multiple streams matched: " + streamName);

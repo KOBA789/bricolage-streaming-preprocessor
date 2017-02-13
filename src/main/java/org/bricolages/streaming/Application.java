@@ -1,7 +1,8 @@
 package org.bricolages.streaming;
+
 import org.bricolages.streaming.filter.ObjectFilterFactory;
 import org.bricolages.streaming.filter.OpBuilder;
-import org.bricolages.streaming.preprocess.StreamRouter;
+import org.bricolages.streaming.preprocess.EventParser;
 import org.bricolages.streaming.preprocess.Preprocessor;
 import org.bricolages.streaming.preprocess.QueueListener;
 import org.bricolages.streaming.event.EventQueue;
@@ -18,8 +19,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.sqs.AmazonSQSClient;
-
-
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -83,7 +82,7 @@ public class Application {
         }
 
         if (mapUrl != null) {
-            val result = mapper().map(mapUrl);
+            val result = eventParser().parse(mapUrl);
             System.out.println(result.destLocation());
             System.exit(0);
         }
@@ -120,7 +119,7 @@ public class Application {
 
     @Bean
     public Preprocessor preprocessor() {
-        return new Preprocessor(logQueue(), s3(), mapper(), filterFactory());
+        return new Preprocessor(logQueue(), s3(), eventParser(), filterFactory());
     }
 
     @Bean
@@ -146,8 +145,9 @@ public class Application {
     }
 
     @Bean
-    public StreamRouter mapper() {
-        return new StreamRouter(this.config.getMappings());
+    public EventParser eventParser() {
+        val mappings = this.config.getMappings();
+        return new EventParser(mappings);
     }
 
     @Bean

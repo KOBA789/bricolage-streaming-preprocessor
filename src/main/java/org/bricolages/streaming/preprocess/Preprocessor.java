@@ -2,11 +2,11 @@ package org.bricolages.streaming.preprocess;
 
 import org.bricolages.streaming.filter.*;
 import org.bricolages.streaming.event.*;
-import org.bricolages.streaming.exception.ApplicationAbort;
 import org.bricolages.streaming.exception.ConfigError;
 import org.bricolages.streaming.s3.*;
+import org.bricolages.streaming.stream.PacketStream;
+import org.bricolages.streaming.stream.PacketStreamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -18,78 +18,82 @@ import lombok.extern.slf4j.Slf4j;
 public class Preprocessor {
     final LogQueue logQueue;
     final S3Agent s3;
-    final StreamRouter mapper;
+    final EventParser parser;
     final ObjectFilterFactory filterFactory;
 
-    public void processObject(S3ObjectLocation location, boolean doesDispatch) {
-        val mapResult = mapper.map(location);
-        if (mapResult == null) {
+    @Autowired
+    PacketStreamRepository streamRepos;
+
+    @Autowired
+    ActivityRepository activityRepos;
+
+    public boolean processObject(S3ObjectLocation location, boolean doesDispatch) {
+        val metadata = parser.parse(location);
+        if (metadata == null) {
             log.warn("could not detect a stream: {}", location);
-            return;
+            return false;
         }
-        processPacket(location, mapResult, doesDispatch);
+        return processPacket(location, metadata, doesDispatch);
     }
 
     public void processOnly(S3ObjectLocation location, BufferedWriter out) throws S3IOException, IOException {
-        val mapResult = mapper.map(location);
-        PacketStream stream = streamRepos.findStream(mapResult.streamName);
-        val filter = filterFactory.load(stream);
+        val metadata = parser.parse(location);
+        PacketStream stream = streamRepos.findStream(metadata.streamName);
+        val filter = filterFactory.load(stream.getOperators());
 
         try (BufferedReader r = s3.openBufferedReader(location)) {
             val stats = filter.apply(r, out, location.toString());
-            log.debug("src: {}, dest: {}, in: {}, out: {}", location, mapResult.destLocation(), stats.inputRows, stats.outputRows);
+            log.debug("src: {}, dest: {}, in: {}, out: {}", location, metadata.destLocation(), stats.inputRows, stats.outputRows);
         }
     }
 
-    void processPacket(S3ObjectLocation location, StreamRouter.Result mapResult, boolean doesDispatch) {
-        PacketStream stream = streamRepos.findStream(mapResult.streamName);
+    boolean processPacket(S3ObjectLocation location, EventParser.PacketMetadata metadata, boolean doesDispatch) {
+        PacketStream stream = streamRepos.findStream(metadata.streamName);
 
         if (stream.isDisabled()) {
             // TODO:
             //stream.defer(packet);
-            return;
+            return false;
         }
         if (stream.isDiscarded()) {
             log.debug("discard event: {}", location);
-            return;
+            return true; // treat as processed to discard event
         }
-        Result result = process(location, mapResult);
+        Result result = process(location, metadata);
         if (result != null && doesDispatch) {
-            writeDispatchInfo(mapResult, result);
+            writeDispatchInfo(metadata, result);
         }
+        return true;
     }
 
-    void writeDispatchInfo(StreamRouter.Result mapResult, Result result) {
+    void writeDispatchInfo(EventParser.PacketMetadata metadata, Result result) {
         // FIXME
     }
 
-    Result process(S3ObjectLocation location, StreamRouter.Result mapResult) {
-        //Activity activity = new Activity(packet);
-        //activityRepos.save(activity);
+    Result process(S3ObjectLocation location, EventParser.PacketMetadata metadata) {
+        Activity activity = new Activity(location.toString(), metadata.destLocation().toString());
+        activityRepos.save(activity);
         try {
-            ObjectFilter filter = filterFactory.load(streamRepos.findStream(mapResult.streamName));
-            Result result = applyFilter(filter, location, mapResult.destLocation(), mapResult.streamName);
-            log.debug("src: {}, dest: {}, in: {}, out: {}", location, mapResult.destLocation(), result.stats.inputRows, result.stats.outputRows);
-            //activity.succeeded();
-            //activityRepos.save(activity);
+            ObjectFilter filter = filterFactory.load(streamRepos.findStream(metadata.streamName).getOperators());
+            Result result = applyFilter(filter, location, metadata.destLocation(), metadata.streamName);
+            log.debug("src: {}, dest: {}, in: {}, out: {}", location, metadata.destLocation(), result.stats.inputRows, result.stats.outputRows);
+            activity.succeeded();
+            activityRepos.save(activity);
             return result;
         }
         catch (S3IOException | IOException ex) {
             log.error("src: {}, error: {}", location, ex.getMessage());
-            //activity.failed(ex.getMessage());
-            //activityRepos.save(activity);
+            activity.failed(ex.getMessage());
+            activityRepos.save(activity);
             return null;
         }
         catch (ConfigError ex) {
             log.error("src: {}, error: {}", location, ex.getMessage());
-            //activity.error(ex.getMessage());
-            //activityRepos.save(activity);
+            activity.error(ex.getMessage());
+            activityRepos.save(activity);
             return null;
         }
     }
-
-    @Autowired
-    PacketStreamRepository streamRepos;
 
     @NoArgsConstructor
     static final class Result {

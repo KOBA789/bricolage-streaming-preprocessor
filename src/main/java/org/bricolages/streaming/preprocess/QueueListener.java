@@ -60,8 +60,10 @@ public class QueueListener implements EventHandlers {
     @Override
     public void handleS3Event(S3Event event) {
         log.debug("handling URL: {}", event.getLocation().toString());
-        preprocessor.processObject(event.getLocation(), !event.doesNotDispatch());
-        eventQueue.deleteAsync(event);
+        boolean isProcessed = preprocessor.processObject(event.getLocation(), !event.doesNotDispatch());
+        if (isProcessed) {
+            eventQueue.deleteAsync(event);
+        }
     }
 
     @Override

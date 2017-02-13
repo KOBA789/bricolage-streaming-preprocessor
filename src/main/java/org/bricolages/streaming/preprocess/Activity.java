@@ -9,7 +9,7 @@ import lombok.*;
 @ToString
 @Entity
 @Table(name="preproc_log")
-public class FilterResult {
+public class Activity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     long id;
@@ -35,6 +35,7 @@ public class FilterResult {
     static final String STATUS_STARTED = "started";
     static final String STATUS_SUCCESS = "success";
     static final String STATUS_FAILURE = "failure";
+    static final String STATUS_ERROR = "error";
 
     @Column(name="start_time")
     Timestamp startTime = null;
@@ -48,7 +49,7 @@ public class FilterResult {
     @Column(name="dispatched")
     boolean dispatched;
 
-    public FilterResult(String src, String dest) {
+    public Activity(String src, String dest) {
         this.srcDataFile = src;
         this.destDataFile = dest;
         this.startTime = currentTimestamp();
@@ -61,6 +62,12 @@ public class FilterResult {
 
     public void failed(String msg) {
         this.status = STATUS_FAILURE;
+        this.endTime = currentTimestamp();
+        this.message = msg;
+    }
+
+    public void error(String msg) {
+        this.status = STATUS_ERROR;
         this.endTime = currentTimestamp();
         this.message = msg;
     }

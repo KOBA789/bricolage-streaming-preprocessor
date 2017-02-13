@@ -41,9 +41,9 @@ public class OpBuilder {
     }
 
     final public Op build(OperatorDefinition def) {
-        val builder = builders.get(def.getOperatorId());
+        val builder = builders.get(def.operatorId);
         if (builder == null) {
-            throw new ConfigError("unknown operator ID: " + def.getOperatorId());
+            throw new ConfigError("unknown operator ID: " + def.operatorId);
         }
         return builder.apply(def);
     }

@@ -1,5 +1,5 @@
 package org.bricolages.streaming.filter;
-import org.bricolages.streaming.preprocess.PacketStream;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,9 +14,8 @@ public class ObjectFilterFactory {
     @Autowired
     OpBuilder builder;
 
-    public ObjectFilter load(PacketStream stream) {
-        List<OperatorDefinition> defs = stream.getOperators();
-        List<Op> ops = defs.stream().map((def) -> {
+    public ObjectFilter load(List<OperatorDefinition> operatorDefs) {
+        List<Op> ops = operatorDefs.stream().map((def) -> {
             Op op = builder.build(def);
             log.debug("operator stacked: {}", op);
             return op;

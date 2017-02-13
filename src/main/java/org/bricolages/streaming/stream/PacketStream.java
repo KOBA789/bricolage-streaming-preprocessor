@@ -1,4 +1,4 @@
-package org.bricolages.streaming.preprocess;
+package org.bricolages.streaming.stream;
 
 import java.util.List;
 import javax.persistence.*;

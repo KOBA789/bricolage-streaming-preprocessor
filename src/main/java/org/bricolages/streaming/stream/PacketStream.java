@@ -23,10 +23,6 @@ public class PacketStream {
     @Getter
     String name;
 
-    @Column(name="stream_prefix", nullable=false)
-    @Getter
-    String prefix;
-
     //@ManyToOne
     //@JoinColumn(name="table_id")
     //@Getter
@@ -44,11 +40,9 @@ public class PacketStream {
     @Getter
     List<OperatorDefinition> operators;
 
-    public PacketStream(String name, String prefix) {
-        this.name = name;
-        this.prefix = prefix;
-        this.disabled = true;
-    }
+    @OneToMany(mappedBy="stream", fetch=FetchType.EAGER)
+    @Getter
+    List<StreamBundle> bundles;
 
     public boolean isDiscarded() {
         return this.discard;

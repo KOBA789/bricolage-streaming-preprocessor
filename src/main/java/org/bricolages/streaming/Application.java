@@ -2,9 +2,9 @@ package org.bricolages.streaming;
 
 import org.bricolages.streaming.filter.ObjectFilterFactory;
 import org.bricolages.streaming.filter.OpBuilder;
-import org.bricolages.streaming.preprocess.EventParser;
-import org.bricolages.streaming.preprocess.Preprocessor;
-import org.bricolages.streaming.preprocess.QueueListener;
+import org.bricolages.streaming.receiver.LocationParser;
+import org.bricolages.streaming.stream.DataSinkHandle;
+import org.bricolages.streaming.stream.Transformer;
 import org.bricolages.streaming.event.EventQueue;
 import org.bricolages.streaming.event.LogQueue;
 import org.bricolages.streaming.event.SQSQueue;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.Objects;
@@ -82,21 +83,50 @@ public class Application {
         }
 
         if (mapUrl != null) {
-            val result = eventParser().parse(mapUrl);
-            System.out.println(result.destLocation());
+            val metadata = locationParser().parse(mapUrl);
+            System.out.println(metadata.destLocation());
             System.exit(0);
         }
 
         if (procUrl != null) {
-            val out = new BufferedWriter(new OutputStreamWriter(System.out));
-            preprocessor().processOnly(procUrl, out);
-            out.flush();
+            val metadata = locationParser().parse(procUrl);
+            val packet = new S3Packet(s3(), metadata.streamName, procUrl);
+            val sinkHandle = new StdoutSinkHandle();
+            transformer().processOnly(packet, sinkHandle);
         }
         else if (oneshot) {
             queueListener().runOnce();
         }
         else {
             queueListener().run();
+        }
+    }
+
+    class StdoutSinkHandle implements DataSinkHandle {
+        public DataSink open() {
+            return new StdoutSink(new BufferedWriter(new OutputStreamWriter(System.out)));
+        }
+
+        public String getLocation() {
+            return "stdout";
+        }
+    }
+    
+    @RequiredArgsConstructor
+    class StdoutSink implements DataSinkHandle.DataSink {
+        private final BufferedWriter out;
+
+        public BufferedWriter getBufferedWriter() {
+            return out;
+        }
+
+        public void close() {
+            try {
+                out.flush();
+                out.close();
+            } catch(IOException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -114,12 +144,12 @@ public class Application {
 
     @Bean
     public QueueListener queueListener() {
-        return new QueueListener(eventQueue(), preprocessor());
+        return new QueueListener(eventQueue(), s3(), transformer(), locationParser(), logQueue());
     }
 
     @Bean
-    public Preprocessor preprocessor() {
-        return new Preprocessor(logQueue(), s3(), eventParser(), filterFactory());
+    public Transformer transformer() {
+        return new Transformer(filterFactory());
     }
 
     @Bean
@@ -145,9 +175,9 @@ public class Application {
     }
 
     @Bean
-    public EventParser eventParser() {
+    public LocationParser locationParser() {
         val mappings = this.config.getMappings();
-        return new EventParser(mappings);
+        return new LocationParser(mappings);
     }
 
     @Bean

@@ -1,4 +1,4 @@
-package org.bricolages.streaming.preprocess;
+package org.bricolages.streaming.receiver;
 
 import org.bricolages.streaming.Config;
 import org.bricolages.streaming.exception.ConfigError;
@@ -12,10 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
 @Slf4j
-public class EventParser {
+public class LocationParser {
     final List<Config.MappingEntry> entries;
 
-    public PacketMetadata parse(S3ObjectLocation src) {
+    public PacketMetadata parse(S3ObjectLocation src) throws ConfigError {
         for (Config.MappingEntry ent : entries) {
             Matcher m = ent.sourcePattern().matcher(src.urlString());
             if (m.matches()) {
@@ -33,7 +33,7 @@ public class EventParser {
         return null;
     }
 
-    String safeSubst(String template, Matcher m) {
+    String safeSubst(String template, Matcher m) throws ConfigError {
         try {
             return m.replaceFirst(template);
         }

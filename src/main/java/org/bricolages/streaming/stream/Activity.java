@@ -1,6 +1,6 @@
-package org.bricolages.streaming.preprocess;
+package org.bricolages.streaming.stream;
+
 import javax.persistence.*;
-import java.util.Date;
 import java.sql.Timestamp;
 import lombok.*;
 

@@ -1,8 +1,10 @@
 package org.bricolages.streaming.filter;
 
+import org.bricolages.streaming.exception.ConfigError;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import lombok.*;
 
@@ -14,12 +16,13 @@ public class ObjectFilterFactory {
     @Autowired
     OpBuilder builder;
 
-    public ObjectFilter load(List<OperatorDefinition> operatorDefs) {
-        List<Op> ops = operatorDefs.stream().map((def) -> {
+    public ObjectFilter load(List<OperatorDefinition> operatorDefs) throws ConfigError {
+        List<Op> ops = new ArrayList<>(operatorDefs.size());
+        for (OperatorDefinition def: operatorDefs) {
             Op op = builder.build(def);
             log.debug("operator stacked: {}", op);
-            return op;
-        }).collect(Collectors.toList());
+            ops.add(op);
+        }
         return new ObjectFilter(ops);
     }
 }

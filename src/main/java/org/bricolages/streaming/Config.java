@@ -35,6 +35,7 @@ public class Config {
     }
 
     // It seems that it must be public for Spring DI
+    @NoArgsConstructor
     public static class MappingEntry {
         @Setter public String srcUrlPattern;
         @Setter public String streamName;

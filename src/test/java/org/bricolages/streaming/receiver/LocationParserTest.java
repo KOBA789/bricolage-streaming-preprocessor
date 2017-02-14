@@ -1,4 +1,4 @@
-package org.bricolages.streaming.preprocess;
+package org.bricolages.streaming.receiver;
 
 import org.bricolages.streaming.Config;
 import org.bricolages.streaming.exception.ConfigError;
@@ -9,9 +9,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import lombok.*;
 
-public class EventParserTest {
-    EventParser newParser(Config.MappingEntry entries) {
-        return new EventParser(Arrays.asList(entries));
+public class LocationParserTest {
+    LocationParser newParser(Config.MappingEntry entries) {
+        return new LocationParser(Arrays.asList(entries));
     }
 
     S3ObjectLocation loc(String url) throws S3UrlParseException {

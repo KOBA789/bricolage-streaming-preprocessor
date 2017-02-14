@@ -40,7 +40,7 @@ public class OpBuilder {
         builders.put(id, builder);
     }
 
-    final public Op build(OperatorDefinition def) {
+    final public Op build(OperatorDefinition def) throws ConfigError {
         val builder = builders.get(def.operatorId);
         if (builder == null) {
             throw new ConfigError("unknown operator ID: " + def.operatorId);

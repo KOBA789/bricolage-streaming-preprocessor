@@ -1,6 +1,9 @@
 package org.bricolages.streaming.filter;
 
 import org.bricolages.streaming.exception.ConfigError;
+import org.bricolages.streaming.stream.PacketStream;
+
+
 import javax.persistence.*;
 import java.util.List;
 import java.io.IOException;
@@ -9,7 +12,6 @@ import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Entity
 @Table(name="strload_filters")
 public class OperatorDefinition {
@@ -20,8 +22,9 @@ public class OperatorDefinition {
     @Column(name="operator_id")
     String operatorId;
 
-    @Column(name="stream_id")
-    long stream_id;
+    @ManyToOne
+    @JoinColumn(name="stream_id")
+    PacketStream stream;
 
     @Column(name="target_column")
     String targetColumn;
@@ -40,7 +43,7 @@ public class OperatorDefinition {
 
     // For tests
     OperatorDefinition(String operatorId, String targetColumn, String params) {
-        this(0, operatorId, 0, targetColumn, 0, params, null, null);
+        this(0, operatorId, null, targetColumn, 0, params, null, null);
     }
 
     public boolean isSingleColumn() {
@@ -48,7 +51,7 @@ public class OperatorDefinition {
     }
 
     public String getTargetColumn() {
-        if (!isSingleColumn()) throw new ConfigError("is not a single column op: stream_id: " + stream_id + ", " + operatorId);
+        if (!isSingleColumn()) throw new ConfigError("is not a single column op: stream_id: " + stream.getId() + ", " + operatorId);
         return targetColumn;
     }
 
@@ -58,7 +61,7 @@ public class OperatorDefinition {
             return map.readValue(params, type);
         }
         catch (IOException err) {
-            throw new ConfigError("could not map filter parameters: stream_id: " + stream_id + ", " + targetColumn + "[" + operatorId + "]: " + params + ": " + err.getMessage());
+            throw new ConfigError("could not map filter parameters: stream_id: " + stream.getId() + ", " + targetColumn + "[" + operatorId + "]: " + params + ": " + err.getMessage());
         }
     }
 }
